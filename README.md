@@ -35,11 +35,24 @@ A multi-tenant white-label product platform — **plain PHP + PostgreSQL**, no f
    # edit .env if your Postgres user/password differs
    ```
 
-3. **Run the demo**
+3. **Seed demo data** (a tenant, an admin user, products, customers)
+   ```bash
+   php seed.php
+   ```
+
+4. **Run the app**
    ```bash
    php -S localhost:8000 -t public
    ```
-   Open http://localhost:8000 — it should connect and list all 23 tables.
+   Open http://localhost:8000 and sign in:
+
+   | Field    | Value              |
+   |----------|--------------------|
+   | Tenant   | `acme`             |
+   | Email    | `admin@acme.test`  |
+   | Password | `password123`      |
+
+   You'll land on a dashboard showing tenant stats, offered products, and recent customers.
 
 ## Open in DBeaver
 
