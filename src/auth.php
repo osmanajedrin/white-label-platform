@@ -134,3 +134,19 @@ function e(?string $v): string
 {
     return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
 }
+
+/** Set a one-time flash message (shown on the next page load). */
+function flash(string $message, string $type = 'success'): void
+{
+    start_session();
+    $_SESSION['flash'] = ['message' => $message, 'type' => $type];
+}
+
+/** Read and clear the flash message, if any. */
+function take_flash(): ?array
+{
+    start_session();
+    $f = $_SESSION['flash'] ?? null;
+    unset($_SESSION['flash']);
+    return $f;
+}

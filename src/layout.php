@@ -40,6 +40,19 @@ function render_header(string $title, ?array $user = null): void
         button:hover { background:#2559bd; }
         .error { background:#fee2e2; color:#b91c1c; padding:10px 12px; border-radius:8px; font-size:14px; margin-top:12px; }
         .hint { background:#f1f5f9; padding:12px; border-radius:8px; font-size:13px; color:var(--muted); margin-top:16px; }
+        .nav { background:#fff; border-bottom:1px solid var(--line); padding:0 24px; display:flex; gap:4px; }
+        .nav a { padding:14px 16px; font-size:14px; color:var(--muted); border-bottom:2px solid transparent; }
+        .nav a:hover { color:var(--ink); }
+        .nav a.active { color:var(--brand); border-bottom-color:var(--brand); font-weight:600; }
+        .flash { padding:12px 16px; border-radius:8px; font-size:14px; margin-bottom:18px; }
+        .flash.success { background:#dcfce7; color:#15803d; }
+        .flash.error { background:#fee2e2; color:#b91c1c; }
+        .row-actions form { display:inline; }
+        .btn-link { background:none; border:0; color:#b91c1c; cursor:pointer; font-size:13px; padding:0; width:auto; margin:0; }
+        .btn-link:hover { background:none; text-decoration:underline; }
+        .btn-inline { width:auto; margin-top:0; padding:9px 16px; }
+        .form-inline { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)) auto; gap:10px; align-items:end; }
+        .form-inline label { margin:0 0 4px; }
     </style>
 </head>
 <body>
@@ -48,8 +61,20 @@ function render_header(string $title, ?array $user = null): void
         <div class="brand"><?= e($user['tenant_name']) ?> <span style="opacity:.6;font-weight:400">/ White Label</span></div>
         <div class="right"><?= e($user['email']) ?> · <a href="/logout.php">Log out</a></div>
     </div>
+    <?php
+        $current = basename($_SERVER['SCRIPT_NAME'] ?? '');
+        $links = ['dashboard.php' => 'Dashboard', 'products.php' => 'Products', 'users.php' => 'Users'];
+    ?>
+    <div class="nav">
+        <?php foreach ($links as $href => $label): ?>
+            <a href="/<?= $href ?>" class="<?= $current === $href ? 'active' : '' ?>"><?= e($label) ?></a>
+        <?php endforeach; ?>
+    </div>
     <?php endif; ?>
     <div class="wrap">
+    <?php $f = take_flash(); if ($f): ?>
+        <div class="flash <?= e($f['type']) ?>"><?= e($f['message']) ?></div>
+    <?php endif; ?>
     <?php
 }
 
