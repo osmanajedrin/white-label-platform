@@ -63,7 +63,7 @@ function render_header(string $title, ?array $user = null): void
     </div>
     <?php
         $current = basename($_SERVER['SCRIPT_NAME'] ?? '');
-        $links = ['dashboard.php' => 'Dashboard', 'products.php' => 'Products', 'users.php' => 'Users'];
+        $links = ['dashboard.php' => 'Dashboard', 'products.php' => 'Products', 'users.php' => 'Users', 'customers.php' => 'Customers'];
     ?>
     <div class="nav">
         <?php foreach ($links as $href => $label): ?>
