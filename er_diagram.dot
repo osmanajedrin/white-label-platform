@@ -1,0 +1,209 @@
+digraph ER {
+    graph [rankdir=LR, splines=ortho, nodesep=0.5, ranksep=1.1, bgcolor="white", fontname="Segoe UI", label="White Label Platform — ER Diagram", labelloc="t", fontsize=22];
+    node  [shape=plaintext, fontname="Segoe UI", fontsize=10];
+    edge  [color="#5b6b7b", arrowhead=crow, arrowtail=none, dir=both, penwidth=1.1];
+
+    /* ---------------- ENTITIES ---------------- */
+    tenants [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#2d6cdf" align="center"><font color="white"><b>tenants</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">name</td></tr>
+      <tr><td align="left">slug (subdomain)</td></tr>
+      <tr><td align="left">deleted_at</td></tr></table>>];
+
+    tenant_products [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#2d6cdf" align="center"><font color="white"><b>tenant_products</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">tenant_id FK</td></tr>
+      <tr><td align="left">product_id FK</td></tr>
+      <tr><td align="left">enabled</td></tr>
+      <tr><td align="left">price_override</td></tr></table>>];
+
+    users [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#2d6cdf" align="center"><font color="white"><b>users</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">tenant_id FK</td></tr>
+      <tr><td align="left">email</td></tr>
+      <tr><td align="left">password_hash</td></tr></table>>];
+
+    user_profiles [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#2d6cdf" align="center"><font color="white"><b>user_profiles</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">user_id FK</td></tr>
+      <tr><td align="left">full_name</td></tr>
+      <tr><td align="left">phone</td></tr></table>>];
+
+    roles [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#2d6cdf" align="center"><font color="white"><b>roles</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">tenant_id FK</td></tr>
+      <tr><td align="left">name</td></tr></table>>];
+
+    user_roles [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#7a5bd4" align="center"><font color="white"><b>user_roles</b></font></td></tr>
+      <tr><td align="left">user_id FK</td></tr>
+      <tr><td align="left">role_id FK</td></tr></table>>];
+
+    sessions [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#2d6cdf" align="center"><font color="white"><b>sessions</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">user_id FK</td></tr>
+      <tr><td align="left">token</td></tr>
+      <tr><td align="left">expires_at</td></tr></table>>];
+
+    product_categories [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#1d9e74" align="center"><font color="white"><b>product_categories</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">name</td></tr>
+      <tr><td align="left">slug</td></tr></table>>];
+
+    products [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#1d9e74" align="center"><font color="white"><b>products</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">category_id FK</td></tr>
+      <tr><td align="left">name</td></tr>
+      <tr><td align="left">status</td></tr></table>>];
+
+    product_details [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#1d9e74" align="center"><font color="white"><b>product_details</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">product_id FK</td></tr>
+      <tr><td align="left">summary / body</td></tr></table>>];
+
+    product_plans [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#1d9e74" align="center"><font color="white"><b>product_plans</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">product_id FK</td></tr>
+      <tr><td align="left">name (tier)</td></tr>
+      <tr><td align="left">billing_period</td></tr></table>>];
+
+    product_costs [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#1d9e74" align="center"><font color="white"><b>product_costs</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">plan_id FK</td></tr>
+      <tr><td align="left">amount / currency</td></tr></table>>];
+
+    product_how_it_works [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#1d9e74" align="center"><font color="white"><b>product_how_it_works</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">product_id FK</td></tr>
+      <tr><td align="left">step_order / title</td></tr></table>>];
+
+    product_beneficiary [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#1d9e74" align="center"><font color="white"><b>product_beneficiary</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">product_id FK</td></tr>
+      <tr><td align="left">benefit</td></tr></table>>];
+
+    product_why [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#1d9e74" align="center"><font color="white"><b>product_why</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">product_id FK</td></tr>
+      <tr><td align="left">reason</td></tr></table>>];
+
+    product_reviews [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#1d9e74" align="center"><font color="white"><b>product_reviews</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">product_id FK</td></tr>
+      <tr><td align="left">customer_id FK</td></tr>
+      <tr><td align="left">rating / body</td></tr></table>>];
+
+    product_faqs [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#1d9e74" align="center"><font color="white"><b>product_faqs</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">product_id FK</td></tr>
+      <tr><td align="left">question / answer</td></tr></table>>];
+
+    customers [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#d97706" align="center"><font color="white"><b>customers</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">tenant_id FK</td></tr>
+      <tr><td align="left">email / full_name</td></tr></table>>];
+
+    customer_purchases [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#d97706" align="center"><font color="white"><b>customer_purchases</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">tenant_id FK</td></tr>
+      <tr><td align="left">customer_id FK</td></tr>
+      <tr><td align="left">plan_id FK</td></tr>
+      <tr><td align="left">status</td></tr></table>>];
+
+    invoices [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#d97706" align="center"><font color="white"><b>invoices</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">purchase_id FK</td></tr>
+      <tr><td align="left">total / status</td></tr></table>>];
+
+    payments [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#d97706" align="center"><font color="white"><b>payments</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">invoice_id FK</td></tr>
+      <tr><td align="left">amount / method</td></tr></table>>];
+
+    audit_logs [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#6b7280" align="center"><font color="white"><b>audit_logs</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">tenant_id FK</td></tr>
+      <tr><td align="left">user_id FK</td></tr>
+      <tr><td align="left">action / entity</td></tr></table>>];
+
+    notifications [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#6b7280" align="center"><font color="white"><b>notifications</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">tenant_id FK</td></tr>
+      <tr><td align="left">user_id FK</td></tr>
+      <tr><td align="left">message / read</td></tr></table>>];
+
+    /* ---------------- RELATIONSHIPS (crow's foot = many) ---------------- */
+    tenants -> users [arrowhead=crow];
+    tenants -> customers [arrowhead=crow];
+    tenants -> tenant_products [arrowhead=crow];
+    tenants -> roles [arrowhead=crow];
+    tenants -> audit_logs [arrowhead=crow];
+    tenants -> notifications [arrowhead=crow];
+
+    users -> user_profiles [arrowhead=none];
+    users -> sessions [arrowhead=crow];
+    users -> user_roles [arrowhead=crow];
+    roles -> user_roles [arrowhead=crow];
+
+    product_categories -> products [arrowhead=crow];
+    products -> product_details [arrowhead=none];
+    products -> product_plans [arrowhead=crow];
+    products -> product_how_it_works [arrowhead=crow];
+    products -> product_beneficiary [arrowhead=crow];
+    products -> product_why [arrowhead=crow];
+    products -> product_reviews [arrowhead=crow];
+    products -> product_faqs [arrowhead=crow];
+    products -> tenant_products [arrowhead=crow];
+    product_plans -> product_costs [arrowhead=crow];
+
+    customers -> customer_purchases [arrowhead=crow];
+    product_plans -> customer_purchases [arrowhead=crow];
+    customers -> product_reviews [arrowhead=crow];
+    customer_purchases -> invoices [arrowhead=crow];
+    invoices -> payments [arrowhead=crow];
+}
