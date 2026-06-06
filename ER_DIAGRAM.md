@@ -11,7 +11,7 @@ decides which tenant offers which product.
 erDiagram
     %% ---------- Tenancy & Identity ----------
     tenants ||--o{ users : "employs"
-    tenants ||--o{ customers : "owns"
+    tenants ||--o{ patients : "owns"
     tenants ||--o{ tenant_products : "offers"
     tenants ||--o{ roles : "defines"
     tenants ||--o{ audit_logs : "scopes"
@@ -40,18 +40,26 @@ erDiagram
     products ||--o{ tenant_products : "enabled_for"
 
     %% ---------- Commerce ----------
-    customers ||--o{ customer_purchases : "buys"
-    product_plans ||--o{ customer_purchases : "sold_as"
-    customers ||--o{ product_reviews : "writes"
+    patients ||--o{ patient_purchases : "buys"
+    product_plans ||--o{ patient_purchases : "sold_as"
+    patients ||--o{ product_reviews : "writes"
 
-    customer_purchases ||--o{ invoices : "billed_by"
+    patient_purchases ||--o{ invoices : "billed_by"
     invoices ||--o{ payments : "paid_by"
 
     %% ===================== ENTITIES =====================
+    admins {
+        uuid id PK
+        text email "master admin login"
+        text password_hash
+        text full_name
+    }
+
     tenants {
         uuid id PK
         text name
         text slug "unique subdomain"
+        boolean is_active "master can disable"
         timestamptz created_at
         timestamptz deleted_at "soft delete"
     }
@@ -159,7 +167,7 @@ erDiagram
     product_reviews {
         uuid id PK
         uuid product_id FK
-        uuid customer_id FK
+        uuid patient_id FK
         int rating
         text body
     }
@@ -171,7 +179,7 @@ erDiagram
         text answer
     }
 
-    customers {
+    patients {
         uuid id PK
         uuid tenant_id FK
         text email "UNIQUE(tenant_id,email)"
@@ -179,10 +187,10 @@ erDiagram
         timestamptz created_at
     }
 
-    customer_purchases {
+    patient_purchases {
         uuid id PK
         uuid tenant_id FK
-        uuid customer_id FK
+        uuid patient_id FK
         uuid plan_id FK
         text status "pending|active|cancelled"
         timestamptz purchased_at
@@ -231,10 +239,12 @@ erDiagram
 ```
 
 ## Relationship summary
-- A **tenant** has many users, customers, roles, and offered products.
+- **admins** are master/platform admins — they sit above all tenants and have no FK
+  to any tenant (a standalone table).
+- A **tenant** has many users, patients, roles, and offered products.
 - A **user** has one profile, many sessions, many roles (via `user_roles`).
 - A **product** (global) belongs to a category and has details, plans, benefits,
   how-it-works steps, why entries, reviews, and FAQs.
-- A **plan** has many cost rows; a **customer** buys a plan via `customer_purchases`.
+- A **plan** has many cost rows; a **patient** buys a plan via `patient_purchases`.
 - A **purchase** is billed by invoices; an **invoice** is settled by payments.
 - **audit_logs** and **notifications** are scoped to a tenant (and a user).

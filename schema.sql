@@ -6,14 +6,26 @@ BEGIN;
 
 -- ========================= Tenancy & Identity =========================
 
+-- Master admins: platform owners that sit ABOVE all tenants (no tenant_id).
+CREATE TABLE admins (
+    id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    email         text NOT NULL UNIQUE,
+    password_hash text NOT NULL,
+    full_name     text,
+    created_at    timestamptz NOT NULL DEFAULT now(),
+    deleted_at    timestamptz
+);
+
 CREATE TABLE tenants (
     id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     name        text NOT NULL,
     slug        text NOT NULL UNIQUE,              -- subdomain, e.g. acme
+    is_active   boolean NOT NULL DEFAULT true,     -- master admin can disable a tenant
     created_at  timestamptz NOT NULL DEFAULT now(),
     deleted_at  timestamptz
 );
 
+-- Tenant admins: users that manage a single tenant.
 CREATE TABLE users (
     id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id     uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
@@ -141,9 +153,9 @@ CREATE TABLE product_faqs (
 );
 CREATE INDEX idx_faqs_product ON product_faqs(product_id);
 
--- ========================= Commerce =========================
+-- ========================= Patients & Commerce =========================
 
-CREATE TABLE customers (
+CREATE TABLE patients (
     id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id   uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     email       text NOT NULL,
@@ -151,33 +163,33 @@ CREATE TABLE customers (
     created_at  timestamptz NOT NULL DEFAULT now(),
     UNIQUE (tenant_id, email)
 );
-CREATE INDEX idx_customers_tenant ON customers(tenant_id);
+CREATE INDEX idx_patients_tenant ON patients(tenant_id);
 
 CREATE TABLE product_reviews (
     id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     product_id  uuid NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-    customer_id uuid REFERENCES customers(id) ON DELETE SET NULL,
+    patient_id  uuid REFERENCES patients(id) ON DELETE SET NULL,
     rating      int NOT NULL CHECK (rating BETWEEN 1 AND 5),
     body        text,
     created_at  timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX idx_reviews_product ON product_reviews(product_id);
 
-CREATE TABLE customer_purchases (
+CREATE TABLE patient_purchases (
     id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id    uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    customer_id  uuid NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+    patient_id   uuid NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     plan_id      uuid NOT NULL REFERENCES product_plans(id) ON DELETE RESTRICT,
     status       text NOT NULL DEFAULT 'pending',  -- pending|active|cancelled
     purchased_at timestamptz NOT NULL DEFAULT now()
 );
-CREATE INDEX idx_purchases_tenant ON customer_purchases(tenant_id);
-CREATE INDEX idx_purchases_customer ON customer_purchases(customer_id);
+CREATE INDEX idx_purchases_tenant ON patient_purchases(tenant_id);
+CREATE INDEX idx_purchases_patient ON patient_purchases(patient_id);
 
 CREATE TABLE invoices (
     id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id   uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    purchase_id uuid NOT NULL REFERENCES customer_purchases(id) ON DELETE CASCADE,
+    purchase_id uuid NOT NULL REFERENCES patient_purchases(id) ON DELETE CASCADE,
     number      text NOT NULL,
     total       numeric(12,2) NOT NULL,
     status      text NOT NULL DEFAULT 'draft',     -- draft|sent|paid|void

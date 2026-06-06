@@ -3,7 +3,11 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../src/layout.php';
 
-// already logged in? go to dashboard
+// already logged in? route to the right place
+if (current_admin() !== null) {
+    header('Location: /admin/index.php');
+    exit;
+}
 if (current_user() !== null) {
     header('Location: /dashboard.php');
     exit;
@@ -16,13 +20,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email    = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    if ($tenant === '' || $email === '' || $password === '') {
-        $error = 'Please fill in all fields.';
-    } elseif (attempt_login($tenant, $email, $password)) {
-        header('Location: /dashboard.php');
-        exit;
+    if ($email === '' || $password === '') {
+        $error = 'Please enter your email and password.';
+    } elseif ($tenant === '') {
+        // No tenant given → treat as a master admin login.
+        if (attempt_master_login($email, $password)) {
+            header('Location: /admin/index.php');
+            exit;
+        }
+        $error = 'Invalid email or password. (Leave Tenant blank only for master admins.)';
     } else {
-        $error = 'Invalid tenant, email, or password.';
+        // Tenant given → tenant admin login.
+        if (attempt_login($tenant, $email, $password)) {
+            header('Location: /dashboard.php');
+            exit;
+        }
+        $error = 'Invalid tenant, email, or password (or the tenant is disabled).';
     }
 }
 
@@ -30,13 +43,13 @@ render_header('Sign in');
 ?>
 <form class="login card" method="post" action="/login.php">
     <h1>Sign in</h1>
-    <p class="muted">Tenant portal login.</p>
+    <p class="muted">Tenant admins enter their tenant. Master admins leave it blank.</p>
 
     <?php if ($error): ?>
         <div class="error"><?= e($error) ?></div>
     <?php endif; ?>
 
-    <label for="tenant">Tenant</label>
+    <label for="tenant">Tenant <span class="muted">(blank = master admin)</span></label>
     <input id="tenant" name="tenant" placeholder="acme" value="<?= e($_POST['tenant'] ?? '') ?>" autofocus>
 
     <label for="email">Email</label>
@@ -48,13 +61,12 @@ render_header('Sign in');
     <button type="submit">Sign in</button>
 
     <div class="hint">
-        <strong>Demo login</strong><br>
-        Tenant: <code>acme</code><br>
-        Email: <code>admin@acme.test</code><br>
-        Password: <code>password123</code>
+        <strong>Demo logins</strong><br>
+        Tenant admin → Tenant <code>acme</code>, <code>admin@acme.test</code> / <code>password123</code><br>
+        Master admin → leave Tenant blank, <code>master@platform.test</code> / <code>master123</code>
     </div>
     <div class="hint" style="text-align:center;">
-        No account yet? <a href="/register.php">Create one</a>
+        New tenant? <a href="/register.php">Create one</a>
     </div>
 </form>
 <?php

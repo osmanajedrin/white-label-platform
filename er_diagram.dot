@@ -4,12 +4,21 @@ digraph ER {
     edge  [color="#5b6b7b", arrowhead=crow, arrowtail=none, dir=both, penwidth=1.1];
 
     /* ---------------- ENTITIES ---------------- */
+    admins [label=<
+      <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
+      <tr><td bgcolor="#0f172a" align="center"><font color="white"><b>admins (master)</b></font></td></tr>
+      <tr><td align="left">id PK</td></tr>
+      <tr><td align="left">email</td></tr>
+      <tr><td align="left">password_hash</td></tr>
+      <tr><td align="left">full_name</td></tr></table>>];
+
     tenants [label=<
       <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
       <tr><td bgcolor="#2d6cdf" align="center"><font color="white"><b>tenants</b></font></td></tr>
       <tr><td align="left">id PK</td></tr>
       <tr><td align="left">name</td></tr>
       <tr><td align="left">slug (subdomain)</td></tr>
+      <tr><td align="left">is_active</td></tr>
       <tr><td align="left">deleted_at</td></tr></table>>];
 
     tenant_products [label=<
@@ -121,7 +130,7 @@ digraph ER {
       <tr><td bgcolor="#1d9e74" align="center"><font color="white"><b>product_reviews</b></font></td></tr>
       <tr><td align="left">id PK</td></tr>
       <tr><td align="left">product_id FK</td></tr>
-      <tr><td align="left">customer_id FK</td></tr>
+      <tr><td align="left">patient_id FK</td></tr>
       <tr><td align="left">rating / body</td></tr></table>>];
 
     product_faqs [label=<
@@ -131,19 +140,19 @@ digraph ER {
       <tr><td align="left">product_id FK</td></tr>
       <tr><td align="left">question / answer</td></tr></table>>];
 
-    customers [label=<
+    patients [label=<
       <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
-      <tr><td bgcolor="#d97706" align="center"><font color="white"><b>customers</b></font></td></tr>
+      <tr><td bgcolor="#d97706" align="center"><font color="white"><b>patients</b></font></td></tr>
       <tr><td align="left">id PK</td></tr>
       <tr><td align="left">tenant_id FK</td></tr>
       <tr><td align="left">email / full_name</td></tr></table>>];
 
-    customer_purchases [label=<
+    patient_purchases [label=<
       <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="white">
-      <tr><td bgcolor="#d97706" align="center"><font color="white"><b>customer_purchases</b></font></td></tr>
+      <tr><td bgcolor="#d97706" align="center"><font color="white"><b>patient_purchases</b></font></td></tr>
       <tr><td align="left">id PK</td></tr>
       <tr><td align="left">tenant_id FK</td></tr>
-      <tr><td align="left">customer_id FK</td></tr>
+      <tr><td align="left">patient_id FK</td></tr>
       <tr><td align="left">plan_id FK</td></tr>
       <tr><td align="left">status</td></tr></table>>];
 
@@ -179,7 +188,7 @@ digraph ER {
 
     /* ---------------- RELATIONSHIPS (crow's foot = many) ---------------- */
     tenants -> users [arrowhead=crow];
-    tenants -> customers [arrowhead=crow];
+    tenants -> patients [arrowhead=crow];
     tenants -> tenant_products [arrowhead=crow];
     tenants -> roles [arrowhead=crow];
     tenants -> audit_logs [arrowhead=crow];
@@ -201,9 +210,9 @@ digraph ER {
     products -> tenant_products [arrowhead=crow];
     product_plans -> product_costs [arrowhead=crow];
 
-    customers -> customer_purchases [arrowhead=crow];
-    product_plans -> customer_purchases [arrowhead=crow];
-    customers -> product_reviews [arrowhead=crow];
-    customer_purchases -> invoices [arrowhead=crow];
+    patients -> patient_purchases [arrowhead=crow];
+    product_plans -> patient_purchases [arrowhead=crow];
+    patients -> product_reviews [arrowhead=crow];
+    patient_purchases -> invoices [arrowhead=crow];
     invoices -> payments [arrowhead=crow];
 }

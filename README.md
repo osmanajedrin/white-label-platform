@@ -1,12 +1,17 @@
 # White Label Platform
 
-A multi-tenant white-label product platform — **plain PHP + PostgreSQL**, no framework.
+A multi-tenant white-label healthcare platform — **plain PHP + PostgreSQL**, no framework.
+
+Three levels of access:
+- **Master Admins** — platform owners, above all tenants. Manage (create / edit / enable / disable) every tenant. Log in with the **Tenant field left blank**.
+- **Tenant Admins** — users who manage a single tenant (products, patients, other admins).
+- **Patients** — the end customers belonging to a tenant.
 
 ## What's here
 
 ```
 .
-├── schema.sql          # PostgreSQL schema (23 tables) — run this to create the DB
+├── schema.sql          # PostgreSQL schema (24 tables) — run this to create the DB
 ├── ER_DIAGRAM.md       # Mermaid ER diagram (full columns)
 ├── er_diagram.png      # Rendered ER diagram
 ├── composer.json       # Project metadata / autoload
@@ -35,7 +40,7 @@ A multi-tenant white-label product platform — **plain PHP + PostgreSQL**, no f
    # edit .env if your Postgres user/password differs
    ```
 
-3. **Seed demo data** (a tenant, an admin user, products, customers)
+3. **Seed demo data** (a master admin, a tenant + admin, products, patients)
    ```bash
    php seed.php
    ```
@@ -44,7 +49,17 @@ A multi-tenant white-label product platform — **plain PHP + PostgreSQL**, no f
    ```bash
    php -S localhost:8000 -t public
    ```
-   Open http://localhost:8000 and sign in:
+   Open http://localhost:8000 and sign in as either:
+
+   **Master admin** (leave Tenant blank):
+
+   | Field    | Value                  |
+   |----------|------------------------|
+   | Tenant   | *(blank)*              |
+   | Email    | `master@platform.test` |
+   | Password | `master123`            |
+
+   **Tenant admin:**
 
    | Field    | Value              |
    |----------|--------------------|
@@ -52,7 +67,8 @@ A multi-tenant white-label product platform — **plain PHP + PostgreSQL**, no f
    | Email    | `admin@acme.test`  |
    | Password | `password123`      |
 
-   You'll land on a dashboard showing tenant stats, offered products, and recent customers.
+   The master admin lands on the tenant-management portal (`/admin`); the tenant admin lands
+   on a dashboard with stats, products, tenant admins, and patients.
 
 ## Open in DBeaver
 
@@ -72,10 +88,11 @@ New connection → PostgreSQL:
 
 ## Schema overview
 
-- **Tenancy/identity:** tenants, tenant_products, users, user_profiles, roles, user_roles, sessions
+- **Platform:** admins (master admins)
+- **Tenancy/identity:** tenants, tenant_products, users (tenant admins), user_profiles, roles, user_roles, sessions
 - **Product catalog (global):** products, product_categories, product_details, product_plans,
   product_costs, product_how_it_works, product_beneficiary, product_why, product_reviews, product_faqs
-- **Commerce:** customers, customer_purchases, invoices, payments
+- **Patients & commerce:** patients, patient_purchases, invoices, payments
 - **Operational:** audit_logs, notifications
 
 `products` is a global catalog; `tenant_products` controls which products each tenant offers.

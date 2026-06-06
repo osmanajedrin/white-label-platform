@@ -104,13 +104,13 @@ $stmt = $pdo->prepare(
 $stmt->execute([':t' => $tid]);
 $users = $stmt->fetchAll();
 
-render_header('Users', $user);
+render_header('Tenant Admins', $user);
 ?>
-<h1>Users</h1>
-<p class="muted">Team members for <strong><?= e($user['tenant_name']) ?></strong>.</p>
+<h1>Tenant Admins</h1>
+<p class="muted">Users who manage <strong><?= e($user['tenant_name']) ?></strong>.</p>
 
 <div class="card">
-    <h2><?= $editing ? 'Edit user' : 'Add a user' ?></h2>
+    <h2><?= $editing ? 'Edit admin' : 'Add an admin' ?></h2>
     <form method="post" action="/users.php" class="form-inline">
         <input type="hidden" name="action" value="<?= $editing ? 'update' : 'add' ?>">
         <?php if ($editing): ?>
@@ -128,7 +128,7 @@ render_header('Users', $user);
             <label for="password">Password <?= $editing ? '<span class="muted">(blank = keep)</span>' : '' ?></label>
             <input id="password" name="password" type="password" placeholder="<?= $editing ? 'leave blank to keep' : 'min 8 chars' ?>" <?= $editing ? '' : 'required' ?>>
         </div>
-        <button type="submit" class="btn-inline"><?= $editing ? 'Save changes' : 'Add user' ?></button>
+        <button type="submit" class="btn-inline"><?= $editing ? 'Save changes' : 'Add admin' ?></button>
         <?php if ($editing): ?>
             <a href="/users.php" class="btn-link" style="padding:9px 4px;">Cancel</a>
         <?php endif; ?>
@@ -136,7 +136,7 @@ render_header('Users', $user);
 </div>
 
 <div class="card">
-    <h2><?= count($users) ?> user<?= count($users) === 1 ? '' : 's' ?></h2>
+    <h2><?= count($users) ?> admin<?= count($users) === 1 ? '' : 's' ?></h2>
     <table>
         <tr><th>Name</th><th>Email</th><th>Joined</th><th></th></tr>
         <?php foreach ($users as $u): ?>

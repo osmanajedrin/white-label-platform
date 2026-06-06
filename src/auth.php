@@ -16,7 +16,7 @@ function start_session(): void
  */
 function attempt_login(string $tenantSlug, string $email, string $password): bool
 {
-    $sql = "SELECT u.id, u.password_hash, u.tenant_id, t.name AS tenant_name, t.slug AS tenant_slug
+    $sql = "SELECT u.id, u.password_hash, u.tenant_id, t.name AS tenant_name, t.slug AS tenant_slug, t.is_active
             FROM users u
             JOIN tenants t ON t.id = u.tenant_id
             WHERE t.slug = :slug AND u.email = :email AND u.deleted_at IS NULL
@@ -28,6 +28,9 @@ function attempt_login(string $tenantSlug, string $email, string $password): boo
     if (!$user || !password_verify($password, $user['password_hash'])) {
         return false;
     }
+    if (!$user['is_active']) {
+        return false; // tenant disabled by a master admin
+    }
 
     start_session();
     session_regenerate_id(true);
@@ -37,6 +40,53 @@ function attempt_login(string $tenantSlug, string $email, string $password): boo
     $_SESSION['tenant_slug'] = $user['tenant_slug'];
     $_SESSION['email']       = $email;
     return true;
+}
+
+/**
+ * Attempt a MASTER admin login (platform owner, no tenant).
+ * Returns true and stores the admin in the session on success.
+ */
+function attempt_master_login(string $email, string $password): bool
+{
+    $stmt = db()->prepare(
+        "SELECT id, password_hash, full_name FROM admins WHERE email = :e AND deleted_at IS NULL LIMIT 1"
+    );
+    $stmt->execute([':e' => $email]);
+    $admin = $stmt->fetch();
+
+    if (!$admin || !password_verify($password, $admin['password_hash'])) {
+        return false;
+    }
+
+    start_session();
+    session_regenerate_id(true);
+    $_SESSION['admin_id']   = $admin['id'];
+    $_SESSION['admin_name'] = $admin['full_name'] ?? $email;
+    $_SESSION['admin_email'] = $email;
+    return true;
+}
+
+function current_admin(): ?array
+{
+    start_session();
+    if (empty($_SESSION['admin_id'])) {
+        return null;
+    }
+    return [
+        'id'    => $_SESSION['admin_id'],
+        'name'  => $_SESSION['admin_name'] ?? '',
+        'email' => $_SESSION['admin_email'] ?? '',
+    ];
+}
+
+function require_admin(): array
+{
+    $admin = current_admin();
+    if ($admin === null) {
+        header('Location: /login.php');
+        exit;
+    }
+    return $admin;
 }
 
 /**

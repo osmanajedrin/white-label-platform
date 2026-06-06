@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/auth.php';
 
-function render_header(string $title, ?array $user = null): void
+function render_head(string $title): void
 {
     ?>
 <!doctype html>
@@ -56,15 +56,28 @@ function render_header(string $title, ?array $user = null): void
     </style>
 </head>
 <body>
-    <?php if ($user !== null): ?>
+    <?php
+}
+
+function render_flash(): void
+{
+    $f = take_flash();
+    if ($f) {
+        echo '<div class="flash ' . e($f['type']) . '">' . e($f['message']) . '</div>';
+    }
+}
+
+function render_header(string $title, ?array $user = null): void
+{
+    render_head($title);
+    if ($user !== null):
+        $current = basename($_SERVER['SCRIPT_NAME'] ?? '');
+        $links = ['dashboard.php' => 'Dashboard', 'products.php' => 'Products', 'users.php' => 'Tenant Admins', 'patients.php' => 'Patients'];
+    ?>
     <div class="topbar">
         <div class="brand"><?= e($user['tenant_name']) ?> <span style="opacity:.6;font-weight:400">/ White Label</span></div>
         <div class="right"><?= e($user['email']) ?> · <a href="/logout.php">Log out</a></div>
     </div>
-    <?php
-        $current = basename($_SERVER['SCRIPT_NAME'] ?? '');
-        $links = ['dashboard.php' => 'Dashboard', 'products.php' => 'Products', 'users.php' => 'Users', 'customers.php' => 'Customers'];
-    ?>
     <div class="nav">
         <?php foreach ($links as $href => $label): ?>
             <a href="/<?= $href ?>" class="<?= $current === $href ? 'active' : '' ?>"><?= e($label) ?></a>
@@ -72,9 +85,7 @@ function render_header(string $title, ?array $user = null): void
     </div>
     <?php endif; ?>
     <div class="wrap">
-    <?php $f = take_flash(); if ($f): ?>
-        <div class="flash <?= e($f['type']) ?>"><?= e($f['message']) ?></div>
-    <?php endif; ?>
+    <?php render_flash(); ?>
     <?php
 }
 
@@ -84,5 +95,24 @@ function render_footer(): void
     </div>
 </body>
 </html>
+    <?php
+}
+
+/** Header for the MASTER admin portal (platform owner). */
+function render_admin_header(string $title, array $admin): void
+{
+    render_head($title);
+    $current = basename($_SERVER['SCRIPT_NAME'] ?? '');
+    ?>
+    <div class="topbar" style="background:#0f172a;">
+        <div class="brand">⬢ Master Admin <span style="opacity:.6;font-weight:400">/ White Label</span></div>
+        <div class="right"><?= e($admin['email']) ?> · <a href="/logout.php">Log out</a></div>
+    </div>
+    <div class="nav">
+        <a href="/admin/index.php" class="<?= $current === 'index.php' ? 'active' : '' ?>">Tenants</a>
+        <a href="/admin/tenant.php" class="<?= $current === 'tenant.php' ? 'active' : '' ?>">New tenant</a>
+    </div>
+    <div class="wrap">
+    <?php render_flash(); ?>
     <?php
 }

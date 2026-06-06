@@ -16,10 +16,10 @@ function count_for(PDO $pdo, string $sql, string $tid): int
 }
 
 $stats = [
-    'Users'     => count_for($pdo, "SELECT count(*) FROM users WHERE tenant_id=:tid AND deleted_at IS NULL", $tid),
-    'Customers' => count_for($pdo, "SELECT count(*) FROM customers WHERE tenant_id=:tid", $tid),
-    'Products'  => count_for($pdo, "SELECT count(*) FROM tenant_products WHERE tenant_id=:tid AND enabled", $tid),
-    'Purchases' => count_for($pdo, "SELECT count(*) FROM customer_purchases WHERE tenant_id=:tid", $tid),
+    'Tenant Admins' => count_for($pdo, "SELECT count(*) FROM users WHERE tenant_id=:tid AND deleted_at IS NULL", $tid),
+    'Patients'      => count_for($pdo, "SELECT count(*) FROM patients WHERE tenant_id=:tid", $tid),
+    'Products'      => count_for($pdo, "SELECT count(*) FROM tenant_products WHERE tenant_id=:tid AND enabled", $tid),
+    'Purchases'     => count_for($pdo, "SELECT count(*) FROM patient_purchases WHERE tenant_id=:tid", $tid),
 ];
 
 // --- products this tenant offers ---
@@ -36,14 +36,14 @@ $stmt = $pdo->prepare(
 $stmt->execute([':tid' => $tid]);
 $products = $stmt->fetchAll();
 
-// --- recent customers ---
+// --- recent patients ---
 $stmt = $pdo->prepare(
     "SELECT full_name, email, created_at
-     FROM customers WHERE tenant_id = :tid
+     FROM patients WHERE tenant_id = :tid
      ORDER BY created_at DESC LIMIT 5"
 );
 $stmt->execute([':tid' => $tid]);
-$customers = $stmt->fetchAll();
+$patients = $stmt->fetchAll();
 
 render_header('Dashboard', $user);
 ?>
@@ -76,17 +76,17 @@ render_header('Dashboard', $user);
 </div>
 
 <div class="card">
-    <h2>Recent customers</h2>
-    <?php if (!$customers): ?>
-        <p class="muted">No customers yet.</p>
+    <h2>Recent patients</h2>
+    <?php if (!$patients): ?>
+        <p class="muted">No patients yet.</p>
     <?php else: ?>
         <table>
             <tr><th>Name</th><th>Email</th><th>Joined</th></tr>
-            <?php foreach ($customers as $c): ?>
+            <?php foreach ($patients as $p): ?>
                 <tr>
-                    <td><?= e($c['full_name'] ?? '—') ?></td>
-                    <td><?= e($c['email']) ?></td>
-                    <td><?= e(substr((string)$c['created_at'], 0, 10)) ?></td>
+                    <td><?= e($p['full_name'] ?? '—') ?></td>
+                    <td><?= e($p['email']) ?></td>
+                    <td><?= e(substr((string)$p['created_at'], 0, 10)) ?></td>
                 </tr>
             <?php endforeach; ?>
         </table>

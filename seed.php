@@ -13,13 +13,18 @@ require __DIR__ . '/src/db.php';
 $pdo = db();
 
 echo "Wiping existing data...\n";
-$pdo->exec("TRUNCATE tenants, products, product_categories RESTART IDENTITY CASCADE");
+$pdo->exec("TRUNCATE admins, tenants, products, product_categories RESTART IDENTITY CASCADE");
 
 echo "Inserting demo data...\n";
 
+// ---- master admin (platform owner, no tenant) ----
+$pdo->prepare(
+    "INSERT INTO admins (email, password_hash, full_name) VALUES ('master@platform.test', :h, 'Platform Owner')"
+)->execute([':h' => password_hash('master123', PASSWORD_DEFAULT)]);
+
 // ---- tenant ----
 $tenantId = $pdo->query(
-    "INSERT INTO tenants (name, slug) VALUES ('Acme Insurance', 'acme') RETURNING id"
+    "INSERT INTO tenants (name, slug) VALUES ('Acme Clinic', 'acme') RETURNING id"
 )->fetchColumn();
 
 // ---- admin user ----
@@ -66,21 +71,24 @@ foreach ($products as [$name, $cat, $status, $price]) {
     }
 }
 
-// ---- customers ----
-$insCustomer = $pdo->prepare(
-    "INSERT INTO customers (tenant_id, email, full_name, created_at) VALUES (:t, :e, :n, now() - (:d || ' days')::interval)"
+// ---- patients ----
+$insPatient = $pdo->prepare(
+    "INSERT INTO patients (tenant_id, email, full_name, created_at) VALUES (:t, :e, :n, now() - (:d || ' days')::interval)"
 );
-$customers = [
+$patients = [
     ['john@example.com',  'John Carter', 1],
     ['mary@example.com',  'Mary Lopez',  3],
     ['ahmed@example.com', 'Ahmed Khan',  6],
 ];
-foreach ($customers as [$email, $nm, $daysAgo]) {
-    $insCustomer->execute([':t' => $tenantId, ':e' => $email, ':n' => $nm, ':d' => $daysAgo]);
+foreach ($patients as [$email, $nm, $daysAgo]) {
+    $insPatient->execute([':t' => $tenantId, ':e' => $email, ':n' => $nm, ':d' => $daysAgo]);
 }
 
-echo "Done.\n";
-echo "Login at /login.php with:\n";
+echo "Done.\n\n";
+echo "Master admin (leave Tenant blank):\n";
+echo "  Email:    master@platform.test\n";
+echo "  Password: master123\n\n";
+echo "Tenant admin:\n";
 echo "  Tenant:   acme\n";
 echo "  Email:    admin@acme.test\n";
 echo "  Password: password123\n";
