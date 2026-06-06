@@ -39,6 +39,64 @@ function attempt_login(string $tenantSlug, string $email, string $password): boo
     return true;
 }
 
+/**
+ * Register a new tenant plus its first admin user, then log them in.
+ * Returns [true, null] on success, or [false, 'error message'] on failure.
+ */
+function register_tenant(string $company, string $slug, string $email, string $password, string $fullName): array
+{
+    $slug = strtolower(trim($slug));
+
+    if ($company === '' || $slug === '' || $email === '' || $password === '') {
+        return [false, 'Please fill in all required fields.'];
+    }
+    if (!preg_match('/^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])?$/', $slug)) {
+        return [false, 'Tenant slug must be 2–40 lowercase letters, numbers, or hyphens.'];
+    }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return [false, 'Please enter a valid email address.'];
+    }
+    if (strlen($password) < 8) {
+        return [false, 'Password must be at least 8 characters.'];
+    }
+
+    $pdo = db();
+    try {
+        $pdo->beginTransaction();
+
+        $stmt = $pdo->prepare("INSERT INTO tenants (name, slug) VALUES (:n, :s) RETURNING id");
+        $stmt->execute([':n' => $company, ':s' => $slug]);
+        $tenantId = $stmt->fetchColumn();
+
+        $stmt = $pdo->prepare(
+            "INSERT INTO users (tenant_id, email, password_hash) VALUES (:t, :e, :h) RETURNING id"
+        );
+        $stmt->execute([':t' => $tenantId, ':e' => $email, ':h' => password_hash($password, PASSWORD_DEFAULT)]);
+        $userId = $stmt->fetchColumn();
+
+        $stmt = $pdo->prepare("INSERT INTO user_profiles (user_id, full_name) VALUES (:u, :f)");
+        $stmt->execute([':u' => $userId, ':f' => $fullName !== '' ? $fullName : null]);
+
+        $pdo->commit();
+    } catch (PDOException $ex) {
+        $pdo->rollBack();
+        // 23505 = unique_violation
+        if ($ex->getCode() === '23505') {
+            return [false, 'That tenant slug is already taken. Pick another.'];
+        }
+        return [false, 'Could not create the account. Please try again.'];
+    }
+
+    start_session();
+    session_regenerate_id(true);
+    $_SESSION['user_id']     = $userId;
+    $_SESSION['tenant_id']   = $tenantId;
+    $_SESSION['tenant_name'] = $company;
+    $_SESSION['tenant_slug'] = $slug;
+    $_SESSION['email']       = $email;
+    return [true, null];
+}
+
 function current_user(): ?array
 {
     start_session();

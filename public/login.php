@@ -53,6 +53,9 @@ render_header('Sign in');
         Email: <code>admin@acme.test</code><br>
         Password: <code>password123</code>
     </div>
+    <div class="hint" style="text-align:center;">
+        No account yet? <a href="/register.php">Create one</a>
+    </div>
 </form>
 <?php
 render_footer();
