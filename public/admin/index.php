@@ -11,6 +11,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     $tid    = $_POST['tenant_id'] ?? '';
 
+    if ($action === 'enter') {
+        if (enter_tenant($tid)) {
+            header('Location: /dashboard.php');
+        } else {
+            flash('That tenant has no admin to act as.', 'error');
+            header('Location: /admin/index.php');
+        }
+        exit;
+    }
+
     if ($action === 'toggle') {
         $stmt = $pdo->prepare("UPDATE tenants SET is_active = NOT is_active WHERE id = :t RETURNING is_active, name");
         $stmt->execute([':t' => $tid]);
@@ -61,6 +71,14 @@ render_admin_header('Tenants', $admin);
                     </td>
                     <td><?= e(substr((string)$t['created_at'], 0, 10)) ?></td>
                     <td class="row-actions">
+                        <?php if ($t['is_active']): ?>
+                            <form method="post" action="/admin/index.php">
+                                <input type="hidden" name="action" value="enter">
+                                <input type="hidden" name="tenant_id" value="<?= e($t['id']) ?>">
+                                <button type="submit" class="btn-link" style="color:#15803d;font-weight:600;">Enter</button>
+                            </form>
+                            &nbsp;·&nbsp;
+                        <?php endif; ?>
                         <a href="/admin/tenant.php?edit=<?= e($t['id']) ?>">Edit</a>
                         &nbsp;·&nbsp;
                         <form method="post" action="/admin/index.php">

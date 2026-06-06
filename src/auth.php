@@ -182,6 +182,53 @@ function logout(): void
     session_destroy();
 }
 
+/**
+ * Master admin "enters" a tenant: act as that tenant's oldest admin while
+ * keeping the master (admin) session. Returns false if the tenant has no admin.
+ */
+function enter_tenant(string $tenantId): bool
+{
+    if (current_admin() === null) {
+        return false; // only master admins may impersonate
+    }
+    $stmt = db()->prepare(
+        "SELECT u.id AS user_id, u.email, t.id AS tenant_id, t.name AS tenant_name, t.slug AS tenant_slug
+         FROM tenants t
+         JOIN users u ON u.tenant_id = t.id AND u.deleted_at IS NULL
+         WHERE t.id = :t
+         ORDER BY u.created_at
+         LIMIT 1"
+    );
+    $stmt->execute([':t' => $tenantId]);
+    $row = $stmt->fetch();
+    if (!$row) {
+        return false;
+    }
+
+    start_session();
+    $_SESSION['user_id']     = $row['user_id'];
+    $_SESSION['tenant_id']   = $row['tenant_id'];
+    $_SESSION['tenant_name'] = $row['tenant_name'];
+    $_SESSION['tenant_slug'] = $row['tenant_slug'];
+    $_SESSION['email']       = $row['email'];
+    return true;
+}
+
+/** True when a master admin is currently acting inside a tenant. */
+function is_impersonating(): bool
+{
+    start_session();
+    return !empty($_SESSION['admin_id']) && !empty($_SESSION['user_id']);
+}
+
+/** Drop the tenant session but keep the master (admin) session. */
+function exit_tenant(): void
+{
+    start_session();
+    unset($_SESSION['user_id'], $_SESSION['tenant_id'], $_SESSION['tenant_name'],
+          $_SESSION['tenant_slug'], $_SESSION['email']);
+}
+
 /** Escape helper for output. */
 function e(?string $v): string
 {

@@ -74,6 +74,12 @@ function render_header(string $title, ?array $user = null): void
         $current = basename($_SERVER['SCRIPT_NAME'] ?? '');
         $links = ['dashboard.php' => 'Dashboard', 'products.php' => 'Products', 'users.php' => 'Tenant Admins', 'patients.php' => 'Patients'];
     ?>
+    <?php if (is_impersonating()): ?>
+    <div style="background:#b45309;color:#fff;padding:8px 24px;font-size:14px;text-align:center;">
+        👁 Viewing <strong><?= e($user['tenant_name']) ?></strong> as master admin —
+        <a href="/admin/return.php" style="color:#fff;text-decoration:underline;">Return to master portal</a>
+    </div>
+    <?php endif; ?>
     <div class="topbar">
         <div class="brand"><?= e($user['tenant_name']) ?> <span style="opacity:.6;font-weight:400">/ White Label</span></div>
         <div class="right"><?= e($user['email']) ?> · <a href="/logout.php">Log out</a></div>
