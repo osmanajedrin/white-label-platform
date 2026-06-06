@@ -103,6 +103,9 @@ function register_tenant(string $company, string $slug, string $email, string $p
     if (!preg_match('/^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])?$/', $slug)) {
         return [false, 'Tenant slug must be 2–40 lowercase letters, numbers, or hyphens.'];
     }
+    if ($slug === 'master') {
+        return [false, '"master" is reserved. Pick another slug.'];
+    }
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         return [false, 'Please enter a valid email address.'];
     }

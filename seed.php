@@ -85,7 +85,8 @@ foreach ($patients as [$email, $nm, $daysAgo]) {
 }
 
 echo "Done.\n\n";
-echo "Master admin (leave Tenant blank):\n";
+echo "Master admin:\n";
+echo "  Tenant:   master\n";
 echo "  Email:    master@platform.test\n";
 echo "  Password: master123\n\n";
 echo "Tenant admin:\n";

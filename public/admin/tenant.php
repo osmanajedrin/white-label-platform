@@ -21,6 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors = [];
         if ($company === '')                       $errors[] = 'Company name is required.';
         if (!preg_match($slugRe, $slug))           $errors[] = 'Slug must be 2–40 lowercase letters, numbers, or hyphens.';
+        elseif ($slug === 'master')                $errors[] = '"master" is a reserved slug.';
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'A valid admin email is required.';
         if (strlen($password) < 8)                 $errors[] = 'Password must be at least 8 characters.';
 

@@ -3,7 +3,7 @@
 A multi-tenant white-label healthcare platform — **plain PHP + PostgreSQL**, no framework.
 
 Three levels of access:
-- **Master Admins** — platform owners, above all tenants. Manage (create / edit / enable / disable) every tenant. Log in with the **Tenant field left blank**.
+- **Master Admins** — platform owners, above all tenants. Manage (create / edit / enable / disable) every tenant. Log in with the **Tenant field set to `master`**.
 - **Tenant Admins** — users who manage a single tenant (products, patients, other admins).
 - **Patients** — the end customers belonging to a tenant.
 
@@ -51,11 +51,11 @@ Three levels of access:
    ```
    Open http://localhost:8000 and sign in as either:
 
-   **Master admin** (leave Tenant blank):
+   **Master admin:**
 
    | Field    | Value                  |
    |----------|------------------------|
-   | Tenant   | *(blank)*              |
+   | Tenant   | `master`               |
    | Email    | `master@platform.test` |
    | Password | `master123`            |
 
